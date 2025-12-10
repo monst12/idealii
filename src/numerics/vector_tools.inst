@@ -23,7 +23,7 @@ namespace idealii::slab::VectorTools
     idealii::slab::DoFHandler<2>                      &dof_handler,
     const dealii::types::boundary_id                   boundary_component,
     dealii::Function<2, double>                       &boundary_function,
-    std::shared_ptr<dealii::AffineConstraints<double>> spacetime_constraints,
+    const std::shared_ptr<dealii::AffineConstraints<double>>& spacetime_constraints,
     const dealii::ComponentMask &component_mask = dealii::ComponentMask());
 
   template void
@@ -31,7 +31,7 @@ namespace idealii::slab::VectorTools
     idealii::slab::DoFHandler<3>                      &dof_handler,
     const dealii::types::boundary_id                   boundary_component,
     dealii::Function<3, double>                       &boundary_function,
-    std::shared_ptr<dealii::AffineConstraints<double>> spacetime_constraints,
+    const std::shared_ptr<dealii::AffineConstraints<double>>& spacetime_constraints,
     const dealii::ComponentMask &component_mask = dealii::ComponentMask());
 
   template void
@@ -40,7 +40,7 @@ namespace idealii::slab::VectorTools
     unsigned int                                       first_vector_component,
     dealii::Function<2, double>                       &boundary_function,
     const dealii::types::boundary_id                   boundary_component,
-    std::shared_ptr<dealii::AffineConstraints<double>> spacetime_constraints);
+    const std::shared_ptr<dealii::AffineConstraints<double>>& spacetime_constraints);
 
   template void
   project_boundary_values_curl_conforming_l2(
@@ -48,7 +48,7 @@ namespace idealii::slab::VectorTools
     unsigned int                                       first_vector_component,
     dealii::Function<3, double>                       &boundary_function,
     const dealii::types::boundary_id                   boundary_component,
-    std::shared_ptr<dealii::AffineConstraints<double>> spacetime_constraints);
+    const std::shared_ptr<dealii::AffineConstraints<double>>& spacetime_constraints);
 
   template double
   calculate_L2_squared_error_on_slab<2>(
