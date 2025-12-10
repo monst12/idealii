@@ -31,7 +31,7 @@ if(NOT DOCUMENTATION_ONLY)
     set(CMAKE_BUILD_TYPE "DebugRelease")
   endif()
   # deal.II
-  find_package(deal.II 9.3 QUIET
+  find_package(deal.II 9.6.0 QUIET
     HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
     )
   if(NOT ${deal.II_FOUND})
@@ -45,6 +45,12 @@ if(NOT DOCUMENTATION_ONLY)
   DEAL_II_INITIALIZE_CACHED_VARIABLES()
   cmake_print_variables(DEAL_II_TARGET_CONFIG)
   include(${DEAL_II_TARGET_CONFIG})
+
+  # Ensure -march=native is set after deal.II initialization
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native" CACHE STRING "Flags used by the CXX compiler during all build types." FORCE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -march=native" CACHE STRING "Flags used by the CXX compiler during DEBUG builds." FORCE)
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native" CACHE STRING "Flags used by the CXX compiler during RELEASE builds." FORCE)
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -march=native" CACHE STRING "Flags used by the CXX compiler during RELWITHDEBINFO builds." FORCE)
 
   option(IDEAL_II_COMPONENT_EXAMPLES
     "Enable configuration and installation of the example steps. This adds a COMPONENT \"examples\" to the build system."
