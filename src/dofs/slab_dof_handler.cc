@@ -48,6 +48,7 @@ namespace idealii::slab
     _temporal_dof       = other._temporal_dof;
     _locally_owned_dofs = other._locally_owned_dofs;
     _fe_support_type    = other._fe_support_type;
+    _fe                 = other._fe;
   }
 
   template <int dim>
@@ -66,8 +67,9 @@ namespace idealii::slab
 
   template <int dim>
   void
-  DoFHandler<dim>::distribute_dofs(spacetime::DG_FiniteElement<dim> fe)
+  DoFHandler<dim>::distribute_dofs(const spacetime::DG_FiniteElement<dim> &fe)
   {
+    _fe = std::make_shared<spacetime::DG_FiniteElement<dim>>(fe);
     _fe_support_type = fe.type();
     _spatial_dof->distribute_dofs(*fe.spatial());
     _temporal_dof->distribute_dofs(*fe.temporal());
@@ -90,28 +92,28 @@ namespace idealii::slab
 
   template <int dim>
   unsigned int
-  DoFHandler<dim>::n_dofs_spacetime()
+  DoFHandler<dim>::n_dofs_spacetime() const
   {
     return _spatial_dof->n_dofs() * _temporal_dof->n_dofs();
   }
 
   template <int dim>
   unsigned int
-  DoFHandler<dim>::n_dofs_space()
+  DoFHandler<dim>::n_dofs_space() const
   {
     return _spatial_dof->n_dofs();
   }
 
   template <int dim>
   unsigned int
-  DoFHandler<dim>::n_dofs_time()
+  DoFHandler<dim>::n_dofs_time() const
   {
     return _temporal_dof->n_dofs();
   }
 
   template <int dim>
   unsigned int
-  DoFHandler<dim>::dofs_per_cell_time()
+  DoFHandler<dim>::dofs_per_cell_time() const
   {
     return _temporal_dof->get_fe().dofs_per_cell;
   }
@@ -135,6 +137,12 @@ namespace idealii::slab
   DoFHandler<dim>::locally_owned_dofs()
   {
     return _locally_owned_dofs;
+  }
+
+  template<int dim>
+  std::shared_ptr<spacetime::DG_FiniteElement<dim>> DoFHandler<dim>::get_fe() const
+  {
+    return _fe;
   }
 } // namespace idealii::slab
 #include "slab_dof_handler.inst"

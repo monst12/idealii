@@ -107,7 +107,7 @@ namespace idealii::slab
      * @warning Due to a call to clear() of the temporal triangulation no subscriptions can exist to it, such as DoFHandler.
      */
     void
-    update_temporal_triangulation(std::vector<double> step_sizes,
+    update_temporal_triangulation(const std::vector<double>& step_sizes,
                                   double              startpoint,
                                   double              endpoint);
 

@@ -90,7 +90,7 @@ namespace idealii::slab
      * @param fe The spacetime finite element to base the distribution on.
      */
     void
-    distribute_dofs(spacetime::DG_FiniteElement<dim> fe);
+    distribute_dofs(const spacetime::DG_FiniteElement<dim> &fe);
 
     /**
      * @brief Total number of space-time degrees of fredom on this slab.
@@ -98,21 +98,21 @@ namespace idealii::slab
      * @return The total number of space-time dofs, i.e. n_dofs_space()*n_dofs_time().
      */
     unsigned int
-    n_dofs_spacetime();
+    n_dofs_spacetime() const;
     /**
      * @brief Number of spatial degrees of fredom on this slab.
      *
      * @return The number of dofs based on the spatial finite element and triangulation.
      */
     unsigned int
-    n_dofs_space();
+    n_dofs_space() const;
     /**
      * @brief Number of temporal degrees of fredom on this slab.
      *
      * @return The number of dofs based on the temporal finite element and  triangulation.
      */
     unsigned int
-    n_dofs_time();
+    n_dofs_time() const;
 
     /**
      * @brief Number of temporal dofs in a single element/interval.
@@ -120,7 +120,7 @@ namespace idealii::slab
      * @return The number of temporal dofs i.e. (r+1) for dG(r) elements.
      */
     unsigned int
-    dofs_per_cell_time();
+    dofs_per_cell_time() const;
 
     /**
      * @brief Number of spatial dofs in a single element.
@@ -152,11 +152,14 @@ namespace idealii::slab
     const dealii::IndexSet &
     locally_owned_dofs();
 
+    std::shared_ptr<spacetime::DG_FiniteElement<dim>> get_fe() const;
+
   private:
     std::shared_ptr<dealii::DoFHandler<dim>>                _spatial_dof;
     std::shared_ptr<dealii::DoFHandler<1>>                  _temporal_dof;
     typename spacetime::DG_FiniteElement<dim>::support_type _fe_support_type;
     dealii::IndexSet                                        _locally_owned_dofs;
+    std::shared_ptr<spacetime::DG_FiniteElement<dim>>       _fe;
   };
 
   /**

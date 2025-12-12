@@ -27,13 +27,13 @@ namespace idealii::spacetime::fixed
   void
   Triangulation<dim>::generate(
     std::shared_ptr<dealii::Triangulation<dim>> space_tria,
-    unsigned int                                M,
-    double                                      t0,
-    double                                      T)
+    const unsigned int                                M,
+    const double                                      t0,
+    const double                                      T)
   {
     Assert(space_tria.use_count(), dealii::ExcNotInitialized());
     double t = t0;
-    double k = (T - t0) / M;
+    const double k = (T - t0) / M;
     for (unsigned int i = 0; i < M; i++)
       {
         this->trias.push_back(
@@ -48,7 +48,7 @@ namespace idealii::spacetime::fixed
                                     const unsigned int times_time)
   {
     // do refinement
-    slab::TriaIterator<dim> slab_tria = this->begin();
+    auto slab_tria = this->begin();
     slab_tria->spatial()->refine_global(times_space);
     for (; slab_tria != this->end(); ++slab_tria)
       {
@@ -70,10 +70,10 @@ namespace idealii::spacetime::fixed
               }
 
             // number of subdivisions needed is at least
-            dealii::types::global_cell_index subdiv =
+            const dealii::types::global_cell_index subdiv =
               M / this->max_N_intervals_per_slab;
             // remaining intervals?
-            dealii::types::global_cell_index modulus =
+            const dealii::types::global_cell_index modulus =
               M % this->max_N_intervals_per_slab;
 
             std::vector<std::vector<double>> partial_step_sizes;
@@ -91,9 +91,9 @@ namespace idealii::spacetime::fixed
             // Distribute step sizes onto subdivisions
             for (i = 0; i < M; ++i)
               {
-                dealii::types::global_cell_index j =
+                const dealii::types::global_cell_index j =
                   i / this->max_N_intervals_per_slab;
-                dealii::types::global_cell_index k =
+                const dealii::types::global_cell_index k =
                   i % this->max_N_intervals_per_slab;
                 partial_step_sizes[j][k] = step_sizes[i];
               }
@@ -111,7 +111,7 @@ namespace idealii::spacetime::fixed
                      j < partial_step_sizes[i].size();
                      ++j)
                   {
-                    end += partial_step_sizes[i][j];
+                    end += j;
                   }
                 this->trias.emplace(slab_tria,
                                     slab_tria->spatial(),
@@ -125,7 +125,7 @@ namespace idealii::spacetime::fixed
                  j < partial_step_sizes[i].size();
                  ++j)
               {
-                end += partial_step_sizes[i][j];
+                end += j;
               }
             slab_tria->update_temporal_triangulation(partial_step_sizes[i],
                                                      start,

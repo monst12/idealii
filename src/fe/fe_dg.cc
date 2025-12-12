@@ -59,21 +59,21 @@ namespace idealii::spacetime
 
   template <int dim>
   std::shared_ptr<dealii::FiniteElement<dim>>
-  DG_FiniteElement<dim>::spatial()
+  DG_FiniteElement<dim>::spatial() const
   {
     return _fe_space;
   }
 
   template <int dim>
   std::shared_ptr<dealii::FiniteElement<1>>
-  DG_FiniteElement<dim>::temporal()
+  DG_FiniteElement<dim>::temporal() const
   {
     return _fe_time;
   }
 
   template <int dim>
   typename DG_FiniteElement<dim>::support_type
-  DG_FiniteElement<dim>::type()
+  DG_FiniteElement<dim>::type() const
   {
     return _type;
   }

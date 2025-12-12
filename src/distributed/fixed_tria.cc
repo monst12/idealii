@@ -90,7 +90,7 @@ namespace idealii::spacetime::parallel::distributed::fixed
               }
             if (modulus)
               {
-                partial_step_sizes.push_back(std::vector<double>(modulus));
+                partial_step_sizes.emplace_back(modulus);
               }
 
 

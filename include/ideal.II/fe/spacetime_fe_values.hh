@@ -251,7 +251,7 @@ namespace idealii::spacetime
      * @param quadrature_point space-time quadrature index.
      */
     double
-    time_quadrature_point(unsigned int quadrature_point);
+    time_quadrature_point(unsigned int quadrature_point) const;
 
     /**
      * @brief Get the spatial quadrature point of the given space-time quadrature index.
@@ -441,7 +441,7 @@ namespace idealii::spacetime
     vector_value_plus(
       const typename dealii::FEValuesExtractors::Vector &extractor,
       unsigned int                                       function_no,
-      unsigned int                                       points_no);
+      unsigned int                                       point_no);
 
     /**
      * @brief Value of the limit from below of the space-time shape function of a vector-valued finite element component.
@@ -584,7 +584,7 @@ namespace idealii::spacetime
      * @param quadrature_point space-time quadrature index.
      */
     double
-    time_quadrature_point(unsigned int quadrature_point);
+    time_quadrature_point(unsigned int quadrature_point) const;
 
     /**
      * @brief Get the spatial quadrature point of the given space-time quadrature index.
@@ -605,10 +605,10 @@ namespace idealii::spacetime
      * @param quadrature_point space-time quadrature index.
      */
     double
-    JxW(const unsigned int quadrature_point);
+    JxW(unsigned int quadrature_point);
     /**
      * @brief Local space-time DoF indices of the current space-time element.
-     * @param A vector of indices to save the result to.
+     * @param indices A vector of indices to save the result to.
      */
     void
     get_local_dof_indices(

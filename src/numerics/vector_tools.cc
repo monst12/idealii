@@ -22,11 +22,12 @@ namespace idealii::slab::VectorTools
   template <int dim, typename Number>
   void
   interpolate_boundary_values(
-    idealii::slab::DoFHandler<dim>                    &dof_handler,
-    const dealii::types::boundary_id                   boundary_component,
-    dealii::Function<dim, Number>                     &boundary_function,
-    const std::shared_ptr<dealii::AffineConstraints<Number>>& spacetime_constraints,
-    const dealii::ComponentMask                       &component_mask)
+    idealii::slab::DoFHandler<dim>  &dof_handler,
+    const dealii::types::boundary_id boundary_component,
+    dealii::Function<dim, Number>   &boundary_function,
+    const std::shared_ptr<dealii::AffineConstraints<Number>>
+                                &spacetime_constraints,
+    const dealii::ComponentMask &component_mask)
   {
     auto space_constraints =
       std::make_shared<dealii::AffineConstraints<Number>>();
@@ -97,11 +98,12 @@ namespace idealii::slab::VectorTools
   template <int dim, typename Number>
   void
   project_boundary_values_curl_conforming_l2(
-    idealii::slab::DoFHandler<dim>                    &dof_handler,
-    unsigned int                                       first_vector_component,
-    dealii::Function<dim, Number>                     &boundary_function,
-    const dealii::types::boundary_id                   boundary_component,
-    const std::shared_ptr<dealii::AffineConstraints<Number>>& spacetime_constraints)
+    idealii::slab::DoFHandler<dim>  &dof_handler,
+    unsigned int                     first_vector_component,
+    dealii::Function<dim, Number>   &boundary_function,
+    const dealii::types::boundary_id boundary_component,
+    const std::shared_ptr<dealii::AffineConstraints<Number>>
+      &spacetime_constraints)
   {
     auto space_constraints =
       std::make_shared<dealii::AffineConstraints<Number>>();
@@ -176,7 +178,7 @@ namespace idealii::slab::VectorTools
     dealii::Vector<double>        &spacetime_vector,
     dealii::Function<dim, double> &exact_solution,
     spacetime::Quadrature<dim>    &quad,
-    dealii::VectorTools::NormType norm = dealii::VectorTools::L2_norm)
+    dealii::VectorTools::NormType  norm)
   {
     double              slab_norm_sqr = 0.;
     dealii::FEValues<1> fev_time(dof_handler.temporal()->get_fe(),
@@ -189,10 +191,9 @@ namespace idealii::slab::VectorTools
     dealii::Vector<double> difference_per_cell;
     space_vec.reinit(dof_handler.n_dofs_space());
     difference_per_cell.reinit(dof_handler.n_dofs_space());
-    std::vector<dealii::Point<1, double>> q_points;
-    double                                t      = 0;
-    unsigned int                          offset = 0;
-    unsigned int n_dofs_space                    = dof_handler.n_dofs_space();
+    double       t            = 0;
+    unsigned int offset       = 0;
+    unsigned int n_dofs_space = dof_handler.n_dofs_space();
     for (auto cell_time : dof_handler.temporal()->active_cell_iterators())
       {
         offset =
@@ -217,13 +218,12 @@ namespace idealii::slab::VectorTools
               }
             // calculate L2 norm at current temporal QP
             difference_per_cell = 0;
-            dealii::VectorTools::integrate_difference(
-              *dof_handler.spatial(),
-              space_vec,
-              exact_solution,
-              difference_per_cell,
-              *quad.spatial(),
-              norm);
+            dealii::VectorTools::integrate_difference(*dof_handler.spatial(),
+                                                      space_vec,
+                                                      exact_solution,
+                                                      difference_per_cell,
+                                                      *quad.spatial(),
+                                                      norm);
 
             slab_norm_sqr += difference_per_cell.norm_sqr() * fev_time.JxW(q);
           }
@@ -238,7 +238,7 @@ namespace idealii::slab::VectorTools
     dealii::TrilinosWrappers::MPI::Vector &spacetime_vector,
     dealii::Function<dim, double>         &exact_solution,
     spacetime::Quadrature<dim>            &quad,
-    dealii::VectorTools::NormType norm = dealii::VectorTools::L2_norm)
+    dealii::VectorTools::NormType          norm)
   {
     double              slab_norm_sqr = 0.;
     dealii::FEValues<1> fev_time(dof_handler.temporal()->get_fe(),
@@ -262,10 +262,9 @@ namespace idealii::slab::VectorTools
     dealii::Vector<double> difference_per_cell;
     difference_per_cell.reinit(dof_handler.n_dofs_space());
 
-    std::vector<dealii::Point<1, double>> q_points;
-    double                                t      = 0;
-    unsigned int                          offset = 0;
-    unsigned int n_dofs_space                    = dof_handler.n_dofs_space();
+    double       t            = 0;
+    unsigned int offset       = 0;
+    unsigned int n_dofs_space = dof_handler.n_dofs_space();
     for (auto cell_time : dof_handler.temporal()->active_cell_iterators())
       {
         offset =
@@ -293,13 +292,12 @@ namespace idealii::slab::VectorTools
             relevant_space_vec = owned_space_vec;
             // calculate L2 norm at current temporal QP
             difference_per_cell = 0;
-            dealii::VectorTools::integrate_difference(
-              *dof_handler.spatial(),
-              relevant_space_vec,
-              exact_solution,
-              difference_per_cell,
-              *quad.spatial(),
-              norm);
+            dealii::VectorTools::integrate_difference(*dof_handler.spatial(),
+                                                      relevant_space_vec,
+                                                      exact_solution,
+                                                      difference_per_cell,
+                                                      *quad.spatial(),
+                                                      norm);
 
             slab_norm_sqr +=
               dealii::Utilities::MPI::sum(difference_per_cell.norm_sqr(),

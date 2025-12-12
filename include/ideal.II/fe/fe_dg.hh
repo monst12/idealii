@@ -74,13 +74,13 @@ namespace idealii::spacetime
      * @return A shared pointer to the underlying finite element object.
      */
     std::shared_ptr<dealii::FiniteElement<dim>>
-    spatial();
+    spatial() const;
     /**
      * @brief The underlying temporal finite element.
      * @return A shared pointer to the underlying finite element object.
      */
     std::shared_ptr<dealii::FiniteElement<1>>
-    temporal();
+    temporal() const;
     /**
      * @brief The number of degrees of freedom per space-time element.
      *
@@ -98,7 +98,7 @@ namespace idealii::spacetime
      * @return The underlying #support_type
      */
     support_type
-    type();
+    type() const;
 
   private:
     std::shared_ptr<dealii::FiniteElement<dim>> _fe_space;

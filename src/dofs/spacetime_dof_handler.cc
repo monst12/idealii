@@ -50,8 +50,8 @@ namespace idealii::spacetime
   {
     if (_tria != nullptr)
       {
-        slab::TriaIterator<dim> tria_it  = this->_tria->begin();
-        slab::TriaIterator<dim> tria_end = this->_tria->end();
+        auto tria_it  = this->_tria->begin();
+        auto tria_end = this->_tria->end();
         for (; tria_it != tria_end; ++tria_it)
           {
             this->_dof_handlers.push_back(
@@ -61,9 +61,9 @@ namespace idealii::spacetime
 #ifdef DEAL_II_WITH_MPI
     else if (_par_dist_tria != nullptr)
       {
-        slab::parallel::distributed::TriaIterator<dim> tria_it =
+        auto tria_it =
           this->_par_dist_tria->begin();
-        slab::parallel::distributed::TriaIterator<dim> tria_end =
+        auto tria_end =
           this->_par_dist_tria->end();
         for (; tria_it != tria_end; ++tria_it)
           {
