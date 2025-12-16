@@ -22,7 +22,7 @@ namespace idealii::slab::VectorTools
   template <int dim, typename Number>
   void
   interpolate_boundary_values(
-    idealii::slab::DoFHandler<dim>  &dof_handler,
+    DoFHandler<dim>                 &dof_handler,
     const dealii::types::boundary_id boundary_component,
     dealii::Function<dim, Number>   &boundary_function,
     const std::shared_ptr<dealii::AffineConstraints<Number>>
@@ -98,7 +98,7 @@ namespace idealii::slab::VectorTools
   template <int dim, typename Number>
   void
   project_boundary_values_curl_conforming_l2(
-    idealii::slab::DoFHandler<dim>  &dof_handler,
+    DoFHandler<dim>                 &dof_handler,
     unsigned int                     first_vector_component,
     dealii::Function<dim, Number>   &boundary_function,
     const dealii::types::boundary_id boundary_component,
@@ -108,7 +108,7 @@ namespace idealii::slab::VectorTools
     auto space_constraints =
       std::make_shared<dealii::AffineConstraints<Number>>();
 
-    dealii::Quadrature<1> quad_time(
+    const dealii::Quadrature<1> quad_time(
       dof_handler.temporal()->get_fe(0).get_unit_support_points());
     dealii::FEValues<1> fev(dof_handler.temporal()->get_fe(0),
                             quad_time,
@@ -173,12 +173,11 @@ namespace idealii::slab::VectorTools
 
   template <int dim>
   double
-  calculate_L2_squared_error_on_slab(
-    slab::DoFHandler<dim>         &dof_handler,
-    dealii::Vector<double>        &spacetime_vector,
-    dealii::Function<dim, double> &exact_solution,
-    spacetime::Quadrature<dim>    &quad,
-    dealii::VectorTools::NormType  norm)
+  calculate_L2_squared_error_on_slab(DoFHandler<dim>        &dof_handler,
+                                     dealii::Vector<double> &spacetime_vector,
+                                     dealii::Function<dim>  &exact_solution,
+                                     spacetime::Quadrature<dim>   &quad,
+                                     dealii::VectorTools::NormType norm)
   {
     double              slab_norm_sqr = 0.;
     dealii::FEValues<1> fev_time(dof_handler.temporal()->get_fe(),
@@ -190,7 +189,8 @@ namespace idealii::slab::VectorTools
     dealii::Vector<double> space_vec;
     dealii::Vector<double> difference_per_cell;
     space_vec.reinit(dof_handler.n_dofs_space());
-    difference_per_cell.reinit(dof_handler.n_dofs_space());
+    difference_per_cell.reinit(
+      dof_handler.spatial()->get_triangulation().n_active_cells());
     double       t            = 0;
     unsigned int offset       = 0;
     unsigned int n_dofs_space = dof_handler.n_dofs_space();
@@ -234,13 +234,13 @@ namespace idealii::slab::VectorTools
   template <int dim>
   double
   calculate_L2_squared_error_on_slab(
-    slab::DoFHandler<dim>                 &dof_handler,
+    DoFHandler<dim>                       &dof_handler,
     dealii::TrilinosWrappers::MPI::Vector &spacetime_vector,
     dealii::Function<dim, double>         &exact_solution,
     spacetime::Quadrature<dim>            &quad,
     dealii::VectorTools::NormType          norm)
   {
-    double              slab_norm_sqr = 0.;
+    double              local_slab_norm_sqr = 0.;
     dealii::FEValues<1> fev_time(dof_handler.temporal()->get_fe(),
                                  *quad.temporal(),
                                  dealii::update_values |
@@ -258,17 +258,19 @@ namespace idealii::slab::VectorTools
     owned_space_vec.reinit(space_owned_dofs, comm);
     relevant_space_vec.reinit(space_owned_dofs, space_relevant_dofs, comm);
 
-
     dealii::Vector<double> difference_per_cell;
-    difference_per_cell.reinit(dof_handler.n_dofs_space());
+    difference_per_cell.reinit(
+      dof_handler.spatial()->get_triangulation().n_active_cells());
 
     double       t            = 0;
     unsigned int offset       = 0;
     unsigned int n_dofs_space = dof_handler.n_dofs_space();
+    std::vector<dealii::types::global_dof_index> owned_indices =
+      space_owned_dofs.get_index_vector();
     for (auto cell_time : dof_handler.temporal()->active_cell_iterators())
       {
-        offset =
-          cell_time->index() * dof_handler.dofs_per_cell_time() * n_dofs_space;
+        offset = cell_time->active_cell_index() *
+                 dof_handler.dofs_per_cell_time() * n_dofs_space;
 
         fev_time.reinit(cell_time);
         for (unsigned int q = 0; q < fev_time.n_quadrature_points; q++)
@@ -281,9 +283,8 @@ namespace idealii::slab::VectorTools
                  ii++)
               {
                 double factor = fev_time.shape_value(ii, q);
-                for (unsigned int j = 0; j < space_owned_dofs.n_elements(); ++j)
+                for (auto i : owned_indices)
                   {
-                    unsigned int i = space_owned_dofs.nth_index_in_set(j);
                     owned_space_vec[i] +=
                       spacetime_vector[i + ii * n_dofs_space + offset] * factor;
                   }
@@ -299,13 +300,85 @@ namespace idealii::slab::VectorTools
                                                       *quad.spatial(),
                                                       norm);
 
-            slab_norm_sqr +=
-              dealii::Utilities::MPI::sum(difference_per_cell.norm_sqr(),
-                                          comm) *
-              fev_time.JxW(q);
+            local_slab_norm_sqr +=
+              difference_per_cell.norm_sqr() * fev_time.JxW(q);
           }
       }
-    return slab_norm_sqr;
+    return dealii::Utilities::MPI::sum(local_slab_norm_sqr, comm);
+  }
+
+
+  template <int dim>
+  double
+  compute_mean_value(
+    DoFHandler<dim>                             &dof,
+    spacetime::Quadrature<dim>                  &quad,
+    const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector,
+    const unsigned int                           component)
+  {
+    const unsigned int n_components = dof.spatial()->get_fe().n_components();
+
+    AssertDimension(spacetime_vector.size(), dof.n_dofs_spacetime());
+    AssertIndexRange(component, n_components);
+    dealii::FEValues<1> fev_time(dof.temporal()->get_fe(),
+                                 *quad.temporal(),
+                                 dealii::update_values |
+                                   dealii::update_JxW_values |
+                                   dealii::update_quadrature_points);
+
+    double mean = 0.;
+    double area = 0.;
+
+    MPI_Comm         comm             = spacetime_vector.get_mpi_communicator();
+    dealii::IndexSet space_owned_dofs = dof.spatial()->locally_owned_dofs();
+    dealii::IndexSet space_relevant_dofs;
+    dealii::DoFTools::extract_locally_relevant_dofs(*dof.spatial(),
+                                                    space_relevant_dofs);
+
+    dealii::TrilinosWrappers::MPI::Vector owned_space_vec;
+    dealii::TrilinosWrappers::MPI::Vector relevant_space_vec;
+    owned_space_vec.reinit(space_owned_dofs, comm);
+    relevant_space_vec.reinit(space_owned_dofs, space_relevant_dofs, comm);
+
+    unsigned int offset       = 0;
+    unsigned int n_dofs_space = dof.n_dofs_space();
+    std::vector<dealii::types::global_dof_index> owned_indices =
+      space_owned_dofs.get_index_vector();
+    for (auto cell_time : dof.temporal()->active_cell_iterators())
+      {
+        offset = cell_time->index() * dof.dofs_per_cell_time() * n_dofs_space;
+
+        fev_time.reinit(cell_time);
+        for (unsigned int q = 0; q < fev_time.n_quadrature_points; q++)
+          {
+            // calculate spatial vector at t
+            owned_space_vec = 0;
+            for (unsigned int ii = 0; ii < dof.dofs_per_cell_time(); ii++)
+              {
+                double factor = fev_time.shape_value(ii, q);
+                for (auto i : owned_indices)
+                  {
+                    owned_space_vec[i] +=
+                      spacetime_vector[i + ii * n_dofs_space + offset] * factor;
+                  }
+              }
+
+            relevant_space_vec = owned_space_vec;
+
+            mean = dealii::VectorTools::compute_mean_value(*dof.spatial(),
+                                                           *quad.spatial(),
+                                                           relevant_space_vec,
+                                                           component);
+
+            mean += mean * fev_time.JxW(q);
+            area += fev_time.JxW(q);
+          }
+      }
+
+    mean = dealii::Utilities::MPI::sum(mean, comm);
+    area = dealii::Utilities::MPI::sum(area, comm);
+
+    return mean / area;
   }
 
 } // namespace idealii::slab::VectorTools

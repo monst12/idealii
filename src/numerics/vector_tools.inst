@@ -81,6 +81,13 @@ namespace idealii::slab::VectorTools
     dealii::Function<3, double>           &exact_solution,
     spacetime::Quadrature<3>              &quad,
     dealii::VectorTools::NormType norm = dealii::VectorTools::L2_norm);
+
+    template double
+    compute_mean_value<2>(
+        DoFHandler<2>                             &dof,
+        spacetime::Quadrature<2>                  &quad,
+        const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector,
+        const unsigned int                           component);
 } // namespace idealii::slab::VectorTools
 
 #endif

@@ -54,10 +54,11 @@ namespace idealii::slab::VectorTools
   template <int dim, typename Number>
   void
   interpolate_boundary_values(
-    idealii::slab::DoFHandler<dim>                    &dof_handler,
-    const dealii::types::boundary_id                   boundary_component,
-    dealii::Function<dim, Number>                     &boundary_function,
-    const std::shared_ptr<dealii::AffineConstraints<Number>> &spacetime_constraints,
+    idealii::slab::DoFHandler<dim>  &dof_handler,
+    const dealii::types::boundary_id boundary_component,
+    dealii::Function<dim, Number>   &boundary_function,
+    const std::shared_ptr<dealii::AffineConstraints<Number>>
+                                &spacetime_constraints,
     const dealii::ComponentMask &component_mask = dealii::ComponentMask());
 
   /**
@@ -80,11 +81,12 @@ namespace idealii::slab::VectorTools
   template <int dim, typename Number = double>
   void
   interpolate_boundary_values(
-    dealii::IndexSet                                   space_relevant_dofs,
-    idealii::slab::DoFHandler<dim>                    &dof_handler,
-    const dealii::types::boundary_id                   boundary_component,
-    dealii::Function<dim, Number>                     &boundary_function,
-    const std::shared_ptr<dealii::AffineConstraints<Number>> &spacetime_constraints,
+    dealii::IndexSet                 space_relevant_dofs,
+    idealii::slab::DoFHandler<dim>  &dof_handler,
+    const dealii::types::boundary_id boundary_component,
+    dealii::Function<dim, Number>   &boundary_function,
+    const std::shared_ptr<dealii::AffineConstraints<Number>>
+                                &spacetime_constraints,
     const dealii::ComponentMask &component_mask = dealii::ComponentMask())
   {
     auto space_constraints =
@@ -126,7 +128,8 @@ namespace idealii::slab::VectorTools
                   {
                     const std::vector<std::pair<dealii::types::global_dof_index,
                                                 double>> *entries =
-                      space_constraints->get_constraint_entries(space_relevant_dof);
+                      space_constraints->get_constraint_entries(
+                        space_relevant_dof);
                     spacetime_constraints->add_line(space_relevant_dof +
                                                     time_dof * n_space_dofs);
                     // non Dirichlet constraint
@@ -134,8 +137,7 @@ namespace idealii::slab::VectorTools
                       {
                         for (auto [fst, snd] : *entries)
                           {
-                            std::cout << fst << "," << snd
-                                      << std::endl;
+                            std::cout << fst << "," << snd << std::endl;
                             spacetime_constraints->add_entry(
                               space_relevant_dof + time_dof * n_space_dofs,
                               fst + time_dof * n_space_dofs,
@@ -146,7 +148,8 @@ namespace idealii::slab::VectorTools
                       {
                         spacetime_constraints->set_inhomogeneity(
                           space_relevant_dof + time_dof * n_space_dofs,
-                          space_constraints->get_inhomogeneity(space_relevant_dof));
+                          space_constraints->get_inhomogeneity(
+                            space_relevant_dof));
                       }
                   }
               }
@@ -173,11 +176,12 @@ namespace idealii::slab::VectorTools
   template <int dim, typename Number>
   void
   project_boundary_values_curl_conforming_l2(
-    idealii::slab::DoFHandler<dim>                    &dof_handler,
-    unsigned int                                       first_vector_component,
-    dealii::Function<dim, Number>                     &boundary_function,
-    const dealii::types::boundary_id                   boundary_component,
-    const std::shared_ptr<dealii::AffineConstraints<Number>> &spacetime_constraints);
+    idealii::slab::DoFHandler<dim>  &dof_handler,
+    unsigned int                     first_vector_component,
+    dealii::Function<dim, Number>   &boundary_function,
+    const dealii::types::boundary_id boundary_component,
+    const std::shared_ptr<dealii::AffineConstraints<Number>>
+      &spacetime_constraints);
 
   /**
    * @brief Get the spatial subvector of a specific temporal dof of the corresponding slab.
@@ -213,7 +217,7 @@ namespace idealii::slab::VectorTools
     unsigned int                                 dof_index)
   {
     const dealii::IndexSet space_owned  = space_vector.locally_owned_elements();
-    unsigned int     n_dofs_space = space_vector.size();
+    unsigned int           n_dofs_space = space_vector.size();
     dealii::TrilinosWrappers::MPI::Vector tmp;
     tmp.reinit(space_owned, space_vector.get_mpi_communicator());
     for (const unsigned int id : space_owned)
@@ -293,9 +297,9 @@ namespace idealii::slab::VectorTools
     dealii::TrilinosWrappers::MPI::Vector       &space_vector,
     const double                                 t)
   {
-    space_vector              = 0;
-    double       left         = 0;
-    double       right        = 0;
+    space_vector = 0;
+    double left  = 0;
+    double right = 0;
     for (auto cell : dof_handler.temporal()->active_cell_iterators())
       {
         left  = cell->face(0)->center()(0);
@@ -346,7 +350,7 @@ namespace idealii::slab::VectorTools
     dealii::Vector<double>        &spacetime_vector,
     dealii::Function<dim, double> &exact_solution,
     spacetime::Quadrature<dim>    &quad,
-    dealii::VectorTools::NormType norm = dealii::VectorTools::L2_norm);
+    dealii::VectorTools::NormType  norm = dealii::VectorTools::L2_norm);
 
   // #ifdef DEAL_II_WITH_MPI
   /**
@@ -366,9 +370,17 @@ namespace idealii::slab::VectorTools
     dealii::TrilinosWrappers::MPI::Vector &spacetime_vector,
     dealii::Function<dim, double>         &exact_solution,
     spacetime::Quadrature<dim>            &quad,
-    dealii::VectorTools::NormType norm = dealii::VectorTools::L2_norm);
+    dealii::VectorTools::NormType          norm = dealii::VectorTools::L2_norm);
 
   // #endif
+
+  template <int dim>
+  double
+  compute_mean_value(
+    DoFHandler<dim>                             &dof,
+    spacetime::Quadrature<dim>                  &quad,
+    const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector,
+    const unsigned int                           component);
 
 } // namespace idealii::slab::VectorTools
 
