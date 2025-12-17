@@ -13,7 +13,11 @@
 //
 // ---------------------------------------------------------------------
 
+#include <ideal.II/fe/spacetime_fe_values.hh>
+
 #include <ideal.II/numerics/vector_tools.hh>
+
+#include <deal.II/grid/filtered_iterator.h>
 
 #include <deal.II/dofs/dof_tools.h>
 
@@ -304,81 +308,70 @@ namespace idealii::slab::VectorTools
               difference_per_cell.norm_sqr() * fev_time.JxW(q);
           }
       }
+
     return dealii::Utilities::MPI::sum(local_slab_norm_sqr, comm);
   }
 
 
   template <int dim>
-  double
-  compute_mean_value(
+  dealii::Vector<double>
+  compute_mean_values(
     DoFHandler<dim>                             &dof,
     spacetime::Quadrature<dim>                  &quad,
-    const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector,
-    const unsigned int                           component)
+    const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector)
   {
-    const unsigned int n_components = dof.spatial()->get_fe().n_components();
-
     AssertDimension(spacetime_vector.size(), dof.n_dofs_spacetime());
-    AssertIndexRange(component, n_components);
-    dealii::FEValues<1> fev_time(dof.temporal()->get_fe(),
-                                 *quad.temporal(),
-                                 dealii::update_values |
-                                   dealii::update_JxW_values |
-                                   dealii::update_quadrature_points);
+    const unsigned int n_components = dof.spatial()->get_fe().n_components();
+    dealii::Vector<double>   local_mean(n_components);
+    spacetime::FEValues<dim> fe_values(*dof.get_fe(),
+                                       quad,
+                                       dealii::update_values |
+                                         dealii::update_JxW_values |
+                                         dealii::update_quadrature_points);
 
-    double mean = 0.;
-    double area = 0.;
+    const MPI_Comm comm = spacetime_vector.get_mpi_communicator();
 
-    MPI_Comm         comm             = spacetime_vector.get_mpi_communicator();
-    dealii::IndexSet space_owned_dofs = dof.spatial()->locally_owned_dofs();
-    dealii::IndexSet space_relevant_dofs;
-    dealii::DoFTools::extract_locally_relevant_dofs(*dof.spatial(),
-                                                    space_relevant_dofs);
+    double       area             = 0.;
+    const unsigned int n_quad_spacetime = fe_values.n_quadrature_points;
 
-    dealii::TrilinosWrappers::MPI::Vector owned_space_vec;
-    dealii::TrilinosWrappers::MPI::Vector relevant_space_vec;
-    owned_space_vec.reinit(space_owned_dofs, comm);
-    relevant_space_vec.reinit(space_owned_dofs, space_relevant_dofs, comm);
+    std::vector values(n_quad_spacetime, dealii::Vector<double>(n_components));
 
-    unsigned int offset       = 0;
-    unsigned int n_dofs_space = dof.n_dofs_space();
-    std::vector<dealii::types::global_dof_index> owned_indices =
-      space_owned_dofs.get_index_vector();
-    for (auto cell_time : dof.temporal()->active_cell_iterators())
+    for (auto cell_space : dof.spatial()->active_cell_iterators() |
+                             dealii::IteratorFilters::LocallyOwnedCell())
       {
-        offset = cell_time->index() * dof.dofs_per_cell_time() * n_dofs_space;
+        fe_values.reinit_space(cell_space);
 
-        fev_time.reinit(cell_time);
-        for (unsigned int q = 0; q < fev_time.n_quadrature_points; q++)
+        for (auto cell_time : dof.temporal()->active_cell_iterators())
           {
-            // calculate spatial vector at t
-            owned_space_vec = 0;
-            for (unsigned int ii = 0; ii < dof.dofs_per_cell_time(); ii++)
+            fe_values.reinit_time(cell_time);
+
+            fe_values.get_function_values(spacetime_vector, values);
+
+            for (unsigned int q = 0; q < n_quad_spacetime; ++q)
               {
-                double factor = fev_time.shape_value(ii, q);
-                for (auto i : owned_indices)
+                auto dq = fe_values.JxW(q);
+
+                for (unsigned int c = 0; c < n_components; ++c)
                   {
-                    owned_space_vec[i] +=
-                      spacetime_vector[i + ii * n_dofs_space + offset] * factor;
+                    local_mean[c] += values[q][c] * dq;
                   }
+
+                area += dq;
               }
-
-            relevant_space_vec = owned_space_vec;
-
-            mean = dealii::VectorTools::compute_mean_value(*dof.spatial(),
-                                                           *quad.spatial(),
-                                                           relevant_space_vec,
-                                                           component);
-
-            mean += mean * fev_time.JxW(q);
-            area += fev_time.JxW(q);
           }
       }
 
-    mean = dealii::Utilities::MPI::sum(mean, comm);
+    const std::vector local_array(local_mean.begin(), local_mean.end());
+    std::vector<double> global_array(n_components);
+    MPI_Allreduce(local_array.data(), global_array.data(), n_components, MPI_DOUBLE, MPI_SUM, comm);
+    for (unsigned int c = 0; c < n_components; ++c)
+      {
+        local_mean[c] = global_array[c];
+      }
     area = dealii::Utilities::MPI::sum(area, comm);
+    local_mean /= area;
 
-    return mean / area;
+    return local_mean;
   }
 
 } // namespace idealii::slab::VectorTools

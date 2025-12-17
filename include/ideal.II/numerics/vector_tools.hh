@@ -374,13 +374,20 @@ namespace idealii::slab::VectorTools
 
   // #endif
 
+  /**
+   * Compute mean values of each component over the space-time slab.
+   * @tparam dim Dimension of the spatial domain
+   * @param dof DoFHandler describing the space-time discretization
+   * @param quad Quadrature formula to use for integration
+   * @param spacetime_vector Vector containing the space-time solution values
+   * @return Mean values of each component over the slab
+   */
   template <int dim>
-  double
-  compute_mean_value(
+  dealii::Vector<double>
+  compute_mean_values(
     DoFHandler<dim>                             &dof,
     spacetime::Quadrature<dim>                  &quad,
-    const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector,
-    const unsigned int                           component);
+    const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector);
 
 } // namespace idealii::slab::VectorTools
 
