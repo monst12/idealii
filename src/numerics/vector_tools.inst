@@ -84,13 +84,13 @@ namespace idealii::slab::VectorTools
 
     template dealii::Vector<double>
     compute_mean_values<2>(
-        DoFHandler<2>                             &dof,
+        idealii::slab::DoFHandler<2>              &dof,
         spacetime::Quadrature<2>                  &quad,
         const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector);
 
     template dealii::Vector<double>
     compute_mean_values<3>(
-       DoFHandler<3>                             &dof,
+       idealii::slab::DoFHandler<3>              &dof,
        spacetime::Quadrature<3>                  &quad,
        const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector);
 } // namespace idealii::slab::VectorTools

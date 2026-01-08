@@ -336,12 +336,12 @@ namespace idealii::slab::VectorTools
 
     std::vector values(n_quad_spacetime, dealii::Vector<double>(n_components));
 
-    for (auto cell_space : dof.spatial()->active_cell_iterators() |
+    for (const auto& cell_space : dof.spatial()->active_cell_iterators() |
                              dealii::IteratorFilters::LocallyOwnedCell())
       {
         fe_values.reinit_space(cell_space);
 
-        for (auto cell_time : dof.temporal()->active_cell_iterators())
+        for (const auto& cell_time : dof.temporal()->active_cell_iterators())
           {
             fe_values.reinit_time(cell_time);
 

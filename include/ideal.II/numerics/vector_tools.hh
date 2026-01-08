@@ -385,10 +385,10 @@ namespace idealii::slab::VectorTools
   template <int dim>
   dealii::Vector<double>
   compute_mean_values(
-    DoFHandler<dim>                             &dof,
+    slab::DoFHandler<dim>                       &dof,
     spacetime::Quadrature<dim>                  &quad,
     const dealii::TrilinosWrappers::MPI::Vector &spacetime_vector);
 
 } // namespace idealii::slab::VectorTools
 
-#endif /* INCLUDE_IDEAL_II_VECTOR_TOOLS_HH_ */
+#endif /* INCLUDE_IDEAL_II_NUMERICS_VECTOR_TOOLS_HH_ */

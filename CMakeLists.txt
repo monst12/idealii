@@ -17,6 +17,13 @@ cmake_policy(SET CMP0022 NEW)
 project(ideal.II VERSION 0.9.0 LANGUAGES CXX)
 option(DOCUMENTATION_ONLY "Only prepare Doxyfile and command" OFF)
 
+# Ensure that all deal.II / Trilinos / PETSc runtime dependencies
+# are discoverable without LD_LIBRARY_PATH
+set(CMAKE_INSTALL_RPATH
+        "$ORIGIN"
+        "$ORIGIN/../lib"
+)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 include(CMakePrintHelpers)
 include(GNUInstallDirs)
@@ -137,8 +144,6 @@ if(NOT DOCUMENTATION_ONLY)
   DESTINATION
     ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}-${PROJECT_VERSION}
   )
-
-
 
   add_subdirectory(examples)
 
