@@ -47,9 +47,37 @@ namespace idealii::spacetime
      * @param quad: The space-time quadrature formula to be used.
      * @param uflags: The update flags to be used during the reinit calls.
      */
-    FEValues(DG_FiniteElement<dim>    &fe,
-             Quadrature<dim>          &quad,
-             const dealii::UpdateFlags uflags);
+    FEValues(const DG_FiniteElement<dim> &fe,
+             const Quadrature<dim>       &quad,
+             const dealii::UpdateFlags    uflags);
+
+    /**
+     * @brief Get the quadrature formula used in this FEValues object.
+     * @return The quadrature formula.
+     */
+    const Quadrature<dim> &
+    get_quadrature() const;
+
+    /**
+     * @brief Get the underlying space-time finite element object.
+     * @return The space-time finite element object.
+     */
+    const DG_FiniteElement<dim> &
+    get_fe() const;
+
+    /**
+     * @brief Get the update flags used in this FEValues object.
+     * @return The update flags.
+     */
+    dealii::UpdateFlags
+    get_update_flags() const;
+
+    /**
+     * @brief Get the underlying space-time FEValues object.
+     * @return The space-time FEValues object.
+     */
+    const FEValues<dim> &
+    get_present_fe_values() const;
 
     /**
      * @brief Reinitialize all objects of the underlying spatial FEValues object.
@@ -75,7 +103,7 @@ namespace idealii::spacetime
      * @param point_no The number of the quadrature point to evaluate at.
      */
     double
-    shape_value(unsigned int function_no, unsigned int point_no);
+    shape_value(unsigned int function_no, unsigned int point_no) const;
 
     /**
      * @brief Temporal derivative of the space-time shape function at spacetime-quadrature point.
@@ -83,15 +111,15 @@ namespace idealii::spacetime
      * @param point_no The number of the quadrature point to evaluate at.
      */
     double
-    shape_dt(unsigned int function_no, unsigned int point_no);
+    shape_dt(unsigned int function_no, unsigned int point_no) const;
 
     /**
      * @brief Spatial derivative of the space-time shape function at spacetime-quadrature point.
      * @param function_no The number of the space-time function/dof to be evaluated.
      * @param point_no The number of the quadrature point to evaluate at.
      */
-    dealii::Tensor<1, dim>
-    shape_space_grad(unsigned int function_no, unsigned int point_no);
+    const dealii::Tensor<1, dim>
+    shape_space_grad(unsigned int function_no, unsigned int point_no) const;
 
     /**
      * @brief Function values of a given vector at all quadrature points
@@ -143,7 +171,7 @@ namespace idealii::spacetime
     typename dealii::FEValuesViews::Scalar<dim>::value_type
     scalar_value(const typename dealii::FEValuesExtractors::Scalar &extractor,
                  unsigned int                                       function_no,
-                 unsigned int                                       point_no);
+                 unsigned int                                       point_no) const;
 
     /**
      * @brief Temporal derivative of the space-time shape function of a scalar finite element component.
@@ -157,7 +185,7 @@ namespace idealii::spacetime
     typename dealii::FEValuesViews::Scalar<dim>::value_type
     scalar_dt(const typename dealii::FEValuesExtractors::Scalar &extractor,
               unsigned int                                       function_no,
-              unsigned int                                       point_no);
+              unsigned int                                       point_no) const;
     /**
      * @brief Spatial derivative of the space-time shape function of a scalar finite element component.
      *
@@ -171,7 +199,7 @@ namespace idealii::spacetime
     scalar_space_grad(
       const typename dealii::FEValuesExtractors::Scalar &extractor,
       unsigned int                                       function_no,
-      unsigned int                                       point_no);
+      unsigned int                                       point_no) const;
 
     /**
      * @brief Value of the space-time shape function of a vector-valued finite element component.
@@ -185,7 +213,7 @@ namespace idealii::spacetime
     typename dealii::FEValuesViews::Vector<dim>::value_type
     vector_value(const typename dealii::FEValuesExtractors::Vector &extractor,
                  unsigned int                                       function_no,
-                 unsigned int                                       point_no);
+                 unsigned int                                       point_no) const;
 
     /**
      * @brief Temporal derivative of the space-time shape function of a vector-valued finite element component.
@@ -199,7 +227,7 @@ namespace idealii::spacetime
     typename dealii::FEValuesViews::Vector<dim>::value_type
     vector_dt(const typename dealii::FEValuesExtractors::Vector &extractor,
               unsigned int                                       function_no,
-              unsigned int                                       point_no);
+              unsigned int                                       point_no) const;
 
     /**
      * @brief Spatial divergence of the space-time shape function of a vector-valued finite element component.
@@ -214,7 +242,7 @@ namespace idealii::spacetime
     vector_divergence(
       const typename dealii::FEValuesExtractors::Vector &extractor,
       unsigned int                                       function_no,
-      unsigned int                                       point_no);
+      unsigned int                                       point_no) const;
 
     /**
      * @brief Spatial gradient of the space-time shape function of a vector-valued finite element component.
@@ -229,7 +257,7 @@ namespace idealii::spacetime
     vector_space_grad(
       const typename dealii::FEValuesExtractors::Vector &extractor,
       unsigned int                                       function_no,
-      unsigned int                                       point_no);
+      unsigned int                                       point_no) const;
 
     /**
      * @brief Spatial curl of the space-time shape function of a vector-valued finite element component.
@@ -244,7 +272,7 @@ namespace idealii::spacetime
     vector_space_curl(
       const typename dealii::FEValuesExtractors::Vector &extractor,
       unsigned int                                       function_no,
-      unsigned int                                       point_no);
+      unsigned int                                       point_no) const;
 
     /**
      * @brief Get the temporal quadrature point of the given space-time quadrature index.
@@ -257,39 +285,39 @@ namespace idealii::spacetime
      * @brief Get the spatial quadrature point of the given space-time quadrature index.
      * @param quadrature_point space-time quadrature index.
      */
-    dealii::Point<dim>
-    space_quadrature_point(unsigned int quadrature_point);
+    const dealii::Point<dim> &
+    space_quadrature_point(unsigned int quadrature_point) const;
 
     /**
      * @brief Mapped space-time quadrature weight.
      * @param quadrature_point space-time quadrature index.
      */
     double
-    JxW(const unsigned int quadrature_point);
+    JxW(const unsigned int quadrature_point) const;
     /**
      * @brief Local space-time DoF indices of the current space-time element.
-     * @param A vector of indices to save the result to.
+     * @param indices A vector of indices to save the result to.
      */
     void
     get_local_dof_indices(
-      std::vector<dealii::types::global_dof_index> &indices);
+      std::vector<dealii::types::global_dof_index> &indices) const;
 
     /**
      * @brief The underlying spatial FEValues object.
      * @return A shared pointer to the spatial FEValues object.
      */
     std::shared_ptr<dealii::FEValues<dim>>
-    spatial();
+    spatial() const;
     /**
      * @brief The underlying temporal FEValues object.
      * @return A shared pointer to the temporal FEValues object.
      */
     std::shared_ptr<dealii::FEValues<1>>
-    temporal();
+    temporal() const;
 
   private:
-    DG_FiniteElement<dim> &_fe;
-    Quadrature<dim>       &_quad;
+    const DG_FiniteElement<dim> &_fe;
+    const Quadrature<dim>       &_quad;
 
     std::shared_ptr<dealii::FEValues<dim>> _fev_space;
     std::shared_ptr<dealii::FEValues<1>>   _fev_time;
@@ -332,9 +360,37 @@ namespace idealii::spacetime
      * @param quad: The space-time quadrature formula to be used.
      * @param uflags: The update flags to be used during the reinit calls.
      */
-    FEJumpValues(DG_FiniteElement<dim>    &fe,
-                 Quadrature<dim>          &quad,
-                 const dealii::UpdateFlags uflags);
+    FEJumpValues(const DG_FiniteElement<dim> &fe,
+                 const Quadrature<dim>       &quad,
+                 const dealii::UpdateFlags    uflags);
+
+    /**
+     * @brief Get the quadrature formula used in this FEValues object.
+     * @return The quadrature formula.
+     */
+    const Quadrature<dim> &
+    get_quadrature() const;
+
+    /**
+     * @brief Get the underlying space-time finite element object.
+     * @return The space-time finite element object.
+     */
+    const DG_FiniteElement<dim> &
+    get_fe() const;
+
+    /**
+     * @brief Get the update flags used in this FEValues object.
+     * @return The update flags.
+     */
+    dealii::UpdateFlags
+    get_update_flags() const;
+
+    /**
+     * @brief Get the underlying space-time FEValues object.
+     * @return The space-time FEValues object.
+     */
+    const FEJumpValues<dim> &
+    get_present_fe_values() const;
 
     /**
      * @brief Reinitialize all objects of the underlying spatial FEValues object.
@@ -364,7 +420,7 @@ namespace idealii::spacetime
      * @param point_no The number of the quadrature point to evaluate at.
      */
     double
-    shape_value_plus(unsigned int function_no, unsigned int point_no);
+    shape_value_plus(unsigned int function_no, unsigned int point_no) const;
 
     /**
      * @brief Value of the limit from below of the space-time shape function at the spatial quadrature point.
@@ -375,7 +431,7 @@ namespace idealii::spacetime
      * @param point_no The number of the quadrature point to evaluate at.
      */
     double
-    shape_value_minus(unsigned int function_no, unsigned int point_no);
+    shape_value_minus(unsigned int function_no, unsigned int point_no) const;
 
     /**
      * @brief Left temporal limit from below of function values of a given vector at all space quadrature points
@@ -413,7 +469,7 @@ namespace idealii::spacetime
     scalar_value_plus(
       const typename dealii::FEValuesExtractors::Scalar &extractor,
       unsigned int                                       function_no,
-      unsigned int                                       point_no);
+      unsigned int                                       point_no) const;
 
     /**
      * @brief Value of the limit from bewlo of the space-time shape function of a scalar finite element component.
@@ -427,7 +483,7 @@ namespace idealii::spacetime
     scalar_value_minus(
       const typename dealii::FEValuesExtractors::Scalar &extractor,
       unsigned int                                       function_no,
-      unsigned int                                       point_no);
+      unsigned int                                       point_no) const;
 
     /**
      * @brief Value of the limit from above of the space-time shape function of a vector-valued finite element component.
@@ -441,7 +497,7 @@ namespace idealii::spacetime
     vector_value_plus(
       const typename dealii::FEValuesExtractors::Vector &extractor,
       unsigned int                                       function_no,
-      unsigned int                                       point_no);
+      unsigned int                                       point_no) const;
 
     /**
      * @brief Value of the limit from below of the space-time shape function of a vector-valued finite element component.
@@ -455,27 +511,27 @@ namespace idealii::spacetime
     vector_value_minus(
       const typename dealii::FEValuesExtractors::Vector &extractor,
       unsigned int                                       function_no,
-      unsigned int                                       point_no);
+      unsigned int                                       point_no) const;
     /**
      * @brief The underlying spatial FEValues object.
      * @return A shared pointer to the spatial FEValues object.
      */
     std::shared_ptr<dealii::FEValues<dim>>
-    spatial();
+    spatial() const;
 
     /**
      * @brief The underlying temporal FEValues object.
      * @return A shared pointer to the temporal FEValues object.
      */
     std::shared_ptr<dealii::FEValues<1>>
-    temporal();
+    temporal() const;
 
     /**
      * @brief Mapped space-time quadrature weight.
      * @param quadrature_point space-time quadrature index.
      */
     double
-    JxW(const unsigned int quadrature_point);
+    JxW(const unsigned int quadrature_point) const;
 
     /**
      * @brief Number of spatial quadrature points per element.
@@ -483,9 +539,9 @@ namespace idealii::spacetime
     unsigned int n_quadrature_points;
 
   private:
-    unsigned int           n_dofs_space;
-    DG_FiniteElement<dim> &_fe;
-    Quadrature<dim>       &_quad;
+    unsigned int                 n_dofs_space;
+    const DG_FiniteElement<dim> &_fe;
+    const Quadrature<dim>       &_quad;
 
     std::shared_ptr<dealii::FEValues<dim>> _fev_space;
     std::shared_ptr<dealii::FEValues<1>>   _fev_time;
@@ -519,10 +575,38 @@ namespace idealii::spacetime
      *                          to the FEFace Object (e.g.:
      * update_normal_vectors)
      */
-    FEFaceValues(DG_FiniteElement<dim>    &fe,
-                 Quadrature<dim - 1>      &quad,
-                 const dealii::UpdateFlags uflags,
-                 const dealii::UpdateFlags additional_flags);
+    FEFaceValues(const DG_FiniteElement<dim> &fe,
+                 const Quadrature<dim - 1>   &quad,
+                 const dealii::UpdateFlags    uflags,
+                 const dealii::UpdateFlags    additional_flags);
+
+    /**
+     * @brief Get the quadrature formula used in this FEValues object.
+     * @return The quadrature formula.
+     */
+    const Quadrature<dim - 1> &
+    get_quadrature() const;
+
+    /**
+     * @brief Get the underlying space-time finite element object.
+     * @return The space-time finite element object.
+     */
+    const DG_FiniteElement<dim> &
+    get_fe() const;
+
+    /**
+     * @brief Get the update flags used in this FEValues object.
+     * @return The update flags.
+     */
+    dealii::UpdateFlags
+    get_update_flags() const;
+
+    /**
+     * @brief Get the underlying space-time FEValues object.
+     * @return The space-time FEValues object.
+     */
+    const FEFaceValues<dim> &
+    get_present_fe_values() const;
 
     /**
      * @brief Reinitialize all objects of the underlying spatial FEValues object.
@@ -549,7 +633,7 @@ namespace idealii::spacetime
      * @param point_no The number of the quadrature point to evaluate at.
      */
     double
-    shape_value(unsigned int function_no, unsigned int point_no);
+    shape_value(unsigned int function_no, unsigned int point_no) const;
 
     /**
      * @brief Value of the space-time shape function of a scalar finite element component.
@@ -563,7 +647,7 @@ namespace idealii::spacetime
     typename dealii::FEValuesViews::Scalar<dim>::value_type
     scalar_value(const typename dealii::FEValuesExtractors::Scalar &extractor,
                  unsigned int                                       function_no,
-                 unsigned int                                       point_no);
+                 unsigned int                                       point_no) const;
 
     /**
      * @brief Value of the space-time shape function of a vector-valued finite element component.
@@ -577,7 +661,7 @@ namespace idealii::spacetime
     typename dealii::FEValuesViews::Vector<dim>::value_type
     vector_value(const typename dealii::FEValuesExtractors::Vector &extractor,
                  unsigned int                                       function_no,
-                 unsigned int                                       point_no);
+                 unsigned int                                       point_no) const;
 
     /**
      * @brief Get the temporal quadrature point of the given space-time quadrature index.
@@ -590,46 +674,46 @@ namespace idealii::spacetime
      * @brief Get the spatial quadrature point of the given space-time quadrature index.
      * @param quadrature_point space-time quadrature index.
      */
-    dealii::Point<dim>
-    space_quadrature_point(unsigned int quadrature_point);
+    const dealii::Point<dim> &
+    space_quadrature_point(unsigned int quadrature_point) const;
 
     /**
      * @brief Get the normal vector at the spatial face.
      * @param i The space-time index of the quadrature point
      */
     const dealii::Tensor<1, dim> &
-    space_normal_vector(unsigned int i);
+    space_normal_vector(unsigned int i) const;
 
     /**
      * @brief Mapped space-time quadrature weight.
      * @param quadrature_point space-time quadrature index.
      */
     double
-    JxW(unsigned int quadrature_point);
+    JxW(unsigned int quadrature_point) const;
     /**
      * @brief Local space-time DoF indices of the current space-time element.
      * @param indices A vector of indices to save the result to.
      */
     void
     get_local_dof_indices(
-      std::vector<dealii::types::global_dof_index> &indices);
+      std::vector<dealii::types::global_dof_index> &indices) const;
 
     /**
      * @brief The underlying spatial FEValues object.
      * @return A shared pointer to the spatial FEValues object.
      */
     std::shared_ptr<dealii::FEFaceValues<dim>>
-    spatial();
+    spatial() const;
     /**
      * @brief The underlying temporal FEValues object.
      * @return A shared pointer to the temporal FEValues object.
      */
     std::shared_ptr<dealii::FEValues<1>>
-    temporal();
+    temporal() const;
 
   private:
-    DG_FiniteElement<dim> &_fe;
-    Quadrature<dim - 1>   &_quad;
+    const DG_FiniteElement<dim> &_fe;
+    const Quadrature<dim - 1>   &_quad;
 
     std::shared_ptr<dealii::FEFaceValues<dim>> _fev_space;
     std::shared_ptr<dealii::FEValues<1>>       _fev_time;
@@ -648,6 +732,92 @@ namespace idealii::spacetime
      */
     unsigned int n_quadrature_points;
   };
+
+  /* Inline functions */
+  template <int dim>
+  inline const Quadrature<dim> &
+  FEValues<dim>::get_quadrature() const
+  {
+    return _quad;
+  }
+
+  template <int dim>
+  inline dealii::UpdateFlags
+  FEValues<dim>::get_update_flags() const
+  {
+    return _fev_space->get_update_flags() | _fev_time->get_update_flags();
+  }
+
+  template <int dim>
+  inline const DG_FiniteElement<dim> &
+  FEValues<dim>::get_fe() const
+  {
+    return _fe;
+  }
+
+  template<int dim>
+  inline const FEValues<dim> &
+  FEValues<dim>::get_present_fe_values() const
+  {
+    return *this;
+  }
+
+  template <int dim>
+  inline const Quadrature<dim> &
+  FEJumpValues<dim>::get_quadrature() const
+  {
+    return _quad;
+  }
+
+  template <int dim>
+  inline dealii::UpdateFlags
+  FEJumpValues<dim>::get_update_flags() const
+  {
+    return _fev_space->get_update_flags() | _fev_time->get_update_flags();
+  }
+
+  template <int dim>
+  inline const DG_FiniteElement<dim> &
+  FEJumpValues<dim>::get_fe() const
+  {
+    return _fe;
+  }
+
+  template<int dim>
+  inline const FEJumpValues<dim> &
+  FEJumpValues<dim>::get_present_fe_values() const
+  {
+    return *this;
+  }
+
+  template <int dim>
+  inline const Quadrature<dim - 1> &
+  FEFaceValues<dim>::get_quadrature() const
+  {
+    return _quad;
+  }
+
+  template <int dim>
+  inline dealii::UpdateFlags
+  FEFaceValues<dim>::get_update_flags() const
+  {
+    return _fev_space->get_update_flags() | _fev_time->get_update_flags();
+  }
+
+  template <int dim>
+  inline const DG_FiniteElement<dim> &
+  FEFaceValues<dim>::get_fe() const
+  {
+    return _fe;
+  }
+
+  template<int dim>
+  inline const FEFaceValues<dim> &
+  FEFaceValues<dim>::get_present_fe_values() const
+  {
+    return *this;
+  }
+
 } // namespace idealii::spacetime
 
 #endif /* INCLUDE_IDEAL_II_BASE_SPACETIME_QUADRATURE_HH_ */

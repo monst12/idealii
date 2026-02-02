@@ -31,14 +31,14 @@ namespace idealii::spacetime
 
   template <int dim>
   std::shared_ptr<dealii::Quadrature<dim>>
-  Quadrature<dim>::spatial()
+  Quadrature<dim>::spatial() const
   {
     return _quad_space;
   }
 
   template <int dim>
   std::shared_ptr<dealii::Quadrature<1>>
-  Quadrature<dim>::temporal()
+  Quadrature<dim>::temporal() const
   {
     return _quad_time;
   }

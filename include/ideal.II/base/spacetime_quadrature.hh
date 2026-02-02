@@ -45,13 +45,13 @@ namespace idealii::spacetime
      * @return A shared pointer to the spatial quadrature formula.
      */
     std::shared_ptr<dealii::Quadrature<dim>>
-    spatial();
+    spatial() const;
     /**
      * @brief The underlying temporal quadrature formula
      * @return A shared pointer to the temporal quadrature formula.
      */
     std::shared_ptr<dealii::Quadrature<1>>
-    temporal();
+    temporal() const;
 
   private:
     std::shared_ptr<dealii::Quadrature<dim>> _quad_space;
