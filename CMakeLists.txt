@@ -12,7 +12,7 @@
 ## the top level directory of ideal.II.
 ##
 ## ---------------------------------------------------------------------
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.23 FATAL_ERROR)
 cmake_policy(SET CMP0022 NEW)
 project(ideal.II VERSION 0.9.0 LANGUAGES CXX)
 option(DOCUMENTATION_ONLY "Only prepare Doxyfile and command" OFF)
@@ -87,6 +87,7 @@ if(NOT DOCUMENTATION_ONLY)
   add_subdirectory(src)
 
   foreach(build_type IN LISTS IDEAL_II_BUILD_TYPES)
+          #file(GLOB_RECURSE IDEAL_II_SRCS include/**/*.hh src/**/*.cc)
           add_library(${PROJECT_NAME}_${build_type} ${IDEAL_II_SRCS})
           string(TOUPPER ${build_type} caps_build_type) 
           DEAL_II_SETUP_TARGET(${PROJECT_NAME}_${build_type} ${caps_build_type})
@@ -102,6 +103,7 @@ if(NOT DOCUMENTATION_ONLY)
           set_property(TARGET ${PROJECT_NAME}_${build_type} PROPERTY POSITION_INDEPENDENT_CODE ON)
           set_target_properties(${PROJECT_NAME}_${build_type}
                   PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+          message("Include dirs: ${CMAKE_SOURCE_DIR}/include")
   endforeach()
 
     

@@ -118,7 +118,7 @@ namespace idealii::spacetime
      * @param function_no The number of the space-time function/dof to be evaluated.
      * @param point_no The number of the quadrature point to evaluate at.
      */
-    const dealii::Tensor<1, dim>
+    dealii::Tensor<1, dim>
     shape_space_grad(unsigned int function_no, unsigned int point_no) const;
 
     /**
@@ -434,6 +434,28 @@ namespace idealii::spacetime
     shape_value_minus(unsigned int function_no, unsigned int point_no) const;
 
     /**
+     * @brief Temporal derivative of the limit from above of the space-time shape function at the spatial quadrature point.
+     *
+     * The temporal value is evaluated at the left point of the unit element
+     * i.e. 0.
+     * @param function_no The number of the space-time function/dof to be evaluated.
+     * @param point_no The number of the quadrature point to evaluate at.
+     */
+    double
+    shape_dt_plus(unsigned int function_no, unsigned int point_no) const;
+
+    /**
+     * @brief Temporal derivative of the limit from below of the space-time shape function at the spatial quadrature point.
+     *
+     * The temporal value is evaluated at the right point of the unit element
+     * i.e. 1.
+     * @param function_no The number of the space-time function/dof to be evaluated.
+     * @param point_no The number of the quadrature point to evaluate at.
+     */
+    double
+    shape_dt_minus(unsigned int function_no, unsigned int point_no) const;
+
+    /**
      * @brief Left temporal limit from below of function values of a given vector at all space quadrature points
      * @in fe_function
      * @out values
@@ -458,6 +480,30 @@ namespace idealii::spacetime
       const;
 
     /**
+     * @brief Left temporal limit from above of function values of a given vector at all space quadrature points
+     * @in fe_function
+     * @out values
+     */
+    template <class InputVector>
+    void
+    get_function_dt_plus(
+      const InputVector &fe_function,
+      std::vector<dealii::Vector<typename InputVector::value_type>> &values)
+      const;
+
+    /**
+     * @brief Left temporal limit from below of function values of a given vector at all space quadrature points
+     * @in fe_function
+     * @out values     
+     */
+    template <class InputVector>
+    void
+    get_function_dt_minus(
+      const InputVector &fe_function,
+      std::vector<dealii::Vector<typename InputVector::value_type>> &values)
+      const;
+
+    /**
      * @brief Value of the limit from above of the space-time shape function of a scalar finite element component.
      *
      * The temporal value is evaluated at the left point of the unit element
@@ -472,7 +518,7 @@ namespace idealii::spacetime
       unsigned int                                       point_no) const;
 
     /**
-     * @brief Value of the limit from bewlo of the space-time shape function of a scalar finite element component.
+     * @brief Value of the limit from below of the space-time shape function of a scalar finite element component.
      *
      * The temporal value is evaluated at the right point of the unit element
      * i.e. 1.
@@ -512,6 +558,63 @@ namespace idealii::spacetime
       const typename dealii::FEValuesExtractors::Vector &extractor,
       unsigned int                                       function_no,
       unsigned int                                       point_no) const;
+
+    /**
+     * @brief Value of the limit from above of the temporal derivative of the space-time shape function of a scalar finite element component.
+     * 
+     * The temporal value is evaluated at the left point of the unit element
+     * i.e. 0.
+     * @param function_no The number of the space-time function/dof to be evaluated.
+     * @param point_no The number of the quadrature point to evaluate at.
+     */
+    typename dealii::FEValuesViews::Scalar<dim>::value_type
+    scalar_dt_plus(
+      const typename dealii::FEValuesExtractors::Scalar &extractor,
+      unsigned int                                       function_no,
+      unsigned int                                       point_no) const;
+
+    /**
+     * @brief Value of the limit from below of the temporal derivative of the space-time shape function of a scalar finite element component.
+     * 
+     * The temporal value is evaluated at the right point of the unit element
+     * i.e. 1.
+     * @param function_no The number of the space-time function/dof to be evaluated.
+     * @param point_no The number of the quadrature point to evaluate at.
+     */
+    typename dealii::FEValuesViews::Scalar<dim>::value_type
+    scalar_dt_minus(
+      const typename dealii::FEValuesExtractors::Scalar &extractor,
+      unsigned int                                       function_no,
+      unsigned int                                       point_no) const;
+
+    /**
+     * @brief Value of the limit from above of the space-time shape function of a scalar finite element component.
+     *
+     * The temporal value is evaluated at the left point of the unit element
+     * i.e. 0.
+     * @param function_no The number of the space-time function/dof to be evaluated.
+     * @param point_no The number of the quadrature point to evaluate at.
+     */
+    typename dealii::FEValuesViews::Vector<dim>::value_type
+    vector_dt_plus(
+      const typename dealii::FEValuesExtractors::Vector &extractor,
+      unsigned int                                       function_no,
+      unsigned int                                       point_no) const;
+
+    /**
+     * @brief Value of the limit from below of the space-time shape function of a vector-valued finite element component.
+     * 
+     * The temporal value is evaluated at the right point of the unit element
+     * i.e. 1.
+     * @param function_no The number of the space-time function/dof to be evaluated.
+     * @param point_no The number of the quadrature point to evaluate at.
+     */
+    typename dealii::FEValuesViews::Vector<dim>::value_type
+    vector_dt_minus(
+      const typename dealii::FEValuesExtractors::Vector &extractor,
+      unsigned int                                       function_no,
+      unsigned int                                       point_no) const;
+
     /**
      * @brief The underlying spatial FEValues object.
      * @return A shared pointer to the spatial FEValues object.
